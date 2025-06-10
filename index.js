@@ -21,7 +21,7 @@ const client = new Client({
 });
 
 // ID channel #general
-const GENERAL_CHANNEL_ID = '1381922366522916958';
+const GENERAL_CHANNEL_ID = '1096456366916378737';
 
 // ID parent thread channels
 const SHARE_LOKER_PARENT_ID = '1096744274801995786';
