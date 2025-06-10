@@ -50,17 +50,30 @@ client.on('messageCreate', async (message) => {
 
   console.log(`[DEBUG] Thread parent ID: ${parentId}`);
 
+  // Filter hanya thread dari channel yang diizinkan
   if (!ALLOWED_PARENT_IDS.includes(parentId)) {
     console.log(`[DEBUG] Thread ini bukan dari channel yang diizinkan`);
     return;
   }
 
+  // Abaikan jika ini reply (comment ke post)
   if (message.reference) {
     console.log(`[DEBUG] Ini reply ke pesan lain, diabaikan`);
     return;
   }
 
+  // Cek apakah ini adalah pesan pertama di thread
   try {
+    const fetchedMessages = await message.channel.messages.fetch({ limit: 2 });
+    const sorted = [...fetchedMessages.values()].sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+    const firstMessage = sorted[0];
+
+    if (message.id !== firstMessage.id) {
+      console.log(`[DEBUG] Ini bukan post pertama di thread, diabaikan`);
+      return;
+    }
+
+    // Kirim embed ke general
     const generalChannel = await client.channels.fetch(GENERAL_CHANNEL_ID);
     if (generalChannel && generalChannel.isTextBased()) {
       const embed = new EmbedBuilder()
@@ -68,8 +81,8 @@ client.on('messageCreate', async (message) => {
         .setTitle('📢 New Post')
         .addFields(
           { name: 'Channel', value: `<#${parentId}>`, inline: true },
-          { name: 'Thread', value: `${message.channel.name}`, inline: true },
-          { name: 'Author', value: `${message.author.username}`, inline: true },
+          { name: 'Thread', value: message.channel.name, inline: true },
+          { name: 'Author', value: message.author.username, inline: true },
           { name: 'Content', value: message.content || '*No content*' }
         )
         .setTimestamp()
