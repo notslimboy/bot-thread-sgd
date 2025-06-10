@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 require('dotenv').config();
 
 const express = require('express');
@@ -23,7 +23,7 @@ const client = new Client({
 // ID channel #general
 const GENERAL_CHANNEL_ID = '1096456366916378737';
 
-// Tambahkan semua parent thread channel di sini:
+// ID parent thread channels
 const SHARE_LOKER_PARENT_ID = '1096744274801995786';
 const SHARE_EVENT_PARENT_ID = '1096559052085018744';
 const SHARE_PORTO_PARENT_ID = '1117363602316337243';
@@ -46,6 +46,8 @@ client.on('messageCreate', async (message) => {
   if (!message.channel.isThread() || message.author.bot) return;
 
   const parentId = message.channel.parentId;
+  const parentChannel = message.channel.parent;
+
   console.log(`[DEBUG] Thread parent ID: ${parentId}`);
 
   if (!ALLOWED_PARENT_IDS.includes(parentId)) {
@@ -53,11 +55,28 @@ client.on('messageCreate', async (message) => {
     return;
   }
 
+  if (message.reference) {
+    console.log(`[DEBUG] Ini reply ke pesan lain, diabaikan`);
+    return;
+  }
+
   try {
     const generalChannel = await client.channels.fetch(GENERAL_CHANNEL_ID);
     if (generalChannel && generalChannel.isTextBased()) {
-      console.log(`[DEBUG] Mengirim notifikasi ke #general...`);
-      await generalChannel.send(`📢 Pesan baru di thread **${message.channel.name}** (dari <#${parentId}>) oleh ${message.author.username}:\n"${message.content}"`);
+      const embed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle('📢 New Post')
+        .addFields(
+          { name: 'Channel', value: `<#${parentId}>`, inline: true },
+          { name: 'Thread', value: `${message.channel.name}`, inline: true },
+          { name: 'Author', value: `${message.author.username}`, inline: true },
+          { name: 'Content', value: message.content || '*No content*' }
+        )
+        .setTimestamp()
+        .setFooter({ text: 'Thread Monitor Bot' });
+
+      console.log(`[DEBUG] Mengirim embed ke #general...`);
+      await generalChannel.send({ embeds: [embed] });
     }
   } catch (error) {
     console.error('❌ Gagal kirim ke general:', error);
