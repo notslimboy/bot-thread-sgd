@@ -86,7 +86,7 @@ client.on('messageCreate', async (message) => {
           { name: 'Content', value: message.content || '*No content*' }
         )
         .setTimestamp()
-        .setFooter({ text: 'Thread Monitor Bot' });
+        .setFooter({ text: 'BOT SGD' });
 
       console.log(`[DEBUG] Mengirim embed ke #general...`);
       await generalChannel.send({ embeds: [embed] });
