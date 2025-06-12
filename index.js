@@ -145,5 +145,15 @@ client.on('messageCreate', async (message) => {
   }
 });
 
+
+// === Trigger Manual "!meme" dari Channel Meme Saja ===
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+  if (message.content.toLowerCase() === '!meme' && message.channel.id === MEME_CHANNEL_ID) {
+    message.reply('📤 Posting meme sekarang...');
+    await postMeme();
+  }
+});
+
 // === LOGIN BOT ===
 client.login(process.env.TOKEN);
